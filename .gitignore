@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.bf-cache/
+*.staged
+*.new.pdf
+
+# Variable font masters: inputs, refetched on demand by `bf assets --fonts`.
+# The cut static faces ARE committed -- builds must not depend on the network.
+fonts/_var_*
+
+# Local working state, not part of the toolchain.
+bookshelf.yaml
+
+# Pre-flight snapshots of the published books. Large, and reproducible from
+# the artifacts themselves -- see docs/retrofit.md.
+.baselines/

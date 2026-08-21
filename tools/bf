@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# bf -- run book-forge from the book repo you are standing in.
+here=$(cd "$(dirname "$0")" && pwd)
+forge=$(dirname "$here")
+PYTHONPATH="$forge${PYTHONPATH:+:$PYTHONPATH}" exec "${BOOK_FORGE_PYTHON:-python}" -m bookforge "$@"

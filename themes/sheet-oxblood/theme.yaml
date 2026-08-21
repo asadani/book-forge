@@ -1,0 +1,38 @@
+# sheet-oxblood -- the Speed Is the Moat look.
+#
+# Sheet-paginated: one <section class="sheet"> per printed page, A4, full-bleed
+# cover. Oxblood is the single loud colour.
+#
+# NOTE: base.css is not extracted yet. Book 1 still carries its <style> inline in
+# book.html.in; pulling it out is scheduled with the matter partials, which need
+# the same injection machinery. This file currently carries the machine-readable
+# half of the theme -- the faces the build inlines, and the QR settings.
+
+name: sheet-oxblood
+page:
+  size: A4
+  margin: "24mm 21mm 22mm 21mm"
+
+# Static instances only: Chrome degrades variable fonts to Type 3 when printing.
+faces:
+  - {family: "Archivo",        weight: 400, file: "Archivo-Regular.woff2"}
+  - {family: "Archivo",        weight: 600, file: "Archivo-SemiBold.woff2"}
+  - {family: "Archivo",        weight: 700, file: "Archivo-Bold.woff2"}
+  - {family: "Source Serif 4", weight: 400, file: "SourceSerif4-Regular.woff2"}
+  - {family: "Source Serif 4", weight: 600, file: "SourceSerif4-SemiBold.woff2"}
+  - {family: "IBM Plex Mono",  weight: 400, file: "IBMPlexMono-Regular.woff2"}
+  - {family: "IBM Plex Mono",  weight: 500, file: "IBMPlexMono-Medium.woff2"}
+  - {family: "IBM Plex Mono",  weight: 600, file: "IBMPlexMono-SemiBold.woff2"}
+
+qr:
+  dark: "#161A21"
+  error: h
+
+palette:
+  ink: "#161A21"
+  ink_soft: "#4E5665"
+  ink_faint: "#7C8593"
+  rule: "#D8DCE3"
+  paper: "#FFFFFF"
+  wash: "#F2F4F7"
+  accent: "#9E2B3A"

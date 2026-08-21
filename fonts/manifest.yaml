@@ -1,0 +1,27 @@
+# Which faces to cut, and from which upstream masters.
+#
+# The cut .woff2 files are committed, so an ordinary build never touches the
+# network. This manifest only matters when adding a face or refreshing upstream:
+#   bf assets --fonts
+#
+# The variable masters (_var_*.ttf, ~1.8 MB) are git-ignored -- they are inputs,
+# refetched on demand.
+
+variable:
+  - family_dir: archivo
+    file: "Archivo[wdth,wght].ttf"
+    instances:
+      - {pin: {wdth: 100, wght: 400}, name: Archivo-Regular}
+      - {pin: {wdth: 100, wght: 600}, name: Archivo-SemiBold}
+      - {pin: {wdth: 100, wght: 700}, name: Archivo-Bold}
+  - family_dir: sourceserif4
+    file: "SourceSerif4[opsz,wght].ttf"
+    instances:
+      - {pin: {opsz: 11, wght: 400}, name: SourceSerif4-Regular}
+      - {pin: {opsz: 11, wght: 600}, name: SourceSerif4-SemiBold}
+
+# Already static upstream; converted to woff2 for size only.
+static:
+  - IBMPlexMono-Regular
+  - IBMPlexMono-Medium
+  - IBMPlexMono-SemiBold

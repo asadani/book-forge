@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "book-forge"
+version = "0.1.0"
+description = "Shared build pipeline for the books: HTML to folio-stamped, self-audited PDF"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Anuj Sadani" }]
+license = { text = "MIT" }
+dependencies = [
+    "pyyaml>=5.4",
+    "jinja2>=3.0",
+    "segno>=1.5",
+    "pillow>=9.0",
+    "fonttools[woff]>=4.40",
+    "pymupdf>=1.23",
+]
+
+[project.scripts]
+bf = "bookforge.cli:main"
+
+[tool.setuptools]
+packages = ["bookforge"]
+
+# Normal use is as a git submodule at tools/book-forge, not an install --
+# see docs/pinning.md. This metadata exists so `pip install -e .` works for
+# toolchain development.
