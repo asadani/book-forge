@@ -51,12 +51,21 @@ def cmd_build(args):
     cfg = _load(args)
     print("building %s" % cfg.slug)
 
-    # 1. HTML
-    cover_jpg = _cover_page(cfg)
-    uri, nbytes = html.data_uri(cover_jpg, "image/jpeg")
-    print("  cover  %d KB embedded" % (nbytes // 1024))
+    # 1. HTML. Only fill the slots this manuscript actually has: a flow-mode
+    # essay draws its own cover and keeps its own type, so it has neither
+    # {{COVER_PAGE_URI}} nor {{FONT_FACES}}.
+    source = html.read(cfg.template)
+    slots = {}
 
-    slots = {"COVER_PAGE_URI": uri, "FONT_FACES": fonts.face_css(cfg.faces)}
+    if cfg.get("cover.page", True) and "{{COVER_PAGE_URI}}" in source:
+        cover_jpg = _cover_page(cfg)
+        uri, nbytes = html.data_uri(cover_jpg, "image/jpeg")
+        print("  cover  %d KB embedded" % (nbytes // 1024))
+        slots["COVER_PAGE_URI"] = uri
+
+    if "{{FONT_FACES}}" in source:
+        slots["FONT_FACES"] = fonts.face_css(cfg.faces)
+
     theme_qr = cfg.theme.get("qr", {})
     specs = cfg.get("qr") or []
     for spec in specs:
@@ -69,7 +78,7 @@ def cmd_build(args):
     if specs:
         print("  qr     %d code(s) inlined as svg" % len(specs))
 
-    text = html.fill(html.read(cfg.template), slots, required=["COVER_PAGE_URI"])
+    text = html.fill(source, slots)
     html.write(cfg.html_out, text)
     print("  html   %s, %.2f MB"
           % (os.path.basename(cfg.html_out), len(text.encode("utf-8")) / 1048576.0))
@@ -84,7 +93,10 @@ def cmd_build(args):
     if args.no_pdf or args.stage == "pdf":
         print("  (stopping before stamp; raw at %s)" % raw)
         return 0
-    written, _ = pdf.stamp(raw, cfg.pdf_out, cfg.get("folio", {}))
+    if cfg.get("folio.enabled", True):
+        written, _ = pdf.stamp(raw, cfg.pdf_out, cfg.get("folio", {}))
+    else:
+        written, _ = pdf.place(raw, cfg.pdf_out)
     if args.stage == "stamp":
         return 0
 
@@ -94,9 +106,9 @@ def cmd_build(args):
 
 
 def _qr_slots(cfg):
-    """target -> "{{SLOT}}". The manuscript keeps the slot tokens; `bf build`
+    """Slot tokens, in qr: order. The manuscript keeps the tokens; `bf build`
     fills them with real SVG, so book.html.in stays readable."""
-    return dict((s["target"], "{{%s}}" % s["slot"]) for s in (cfg.get("qr") or []))
+    return ["{{%s}}" % s["slot"] for s in (cfg.get("qr") or [])]
 
 
 REGIONS = [
@@ -127,6 +139,18 @@ def cmd_inject(args):
             anchor_before=cfg.get("matter.%s.anchor_before" % key),
             anchor_after=cfg.get("matter.%s.anchor_after" % key))
         results.append((region, status))
+
+    # Static faces, inlined to replace a variable-font delivery. Chrome prints
+    # variable fonts as Type 3, which is unextractable and unusable for print;
+    # these are declared after the host's own @font-face rules so they win.
+    inline = cfg.get("fonts.inline")
+    if inline:
+        from . import fonts as fontsmod
+        block = fontsmod.face_css(inline, quiet=True)
+        text, status = inject.apply(
+            text, "FONTS", block,
+            anchor_before=cfg.get("fonts.anchor", "</style>"))
+        results.append(("FONTS", status))
 
     css = render.matter_css()
     if css and cfg.get("matter.css", cfg.get("matter.mode") == "flow"):

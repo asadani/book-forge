@@ -1,0 +1,167 @@
+/* book-forge matter -- flow mode.
+ *
+ * Injected into essays that were never built as books. Each has its own
+ * stylesheet, and they collide in specific, verified ways:
+ *
+ *   - they reuse `rule`, `lead`, `card`, `meta`, `small`, `cover`, `beat`,
+ *     `kicker`, `num`, `refs` for their own purposes, and two of them define
+ *     `preface` to mean a pull-quote. So every selector here is scoped under
+ *     .bf-matter and nothing is styled by element alone at document scope.
+ *
+ *   - they define the SAME custom property names with different values, and
+ *     idp-barbell has --crimson with no --accent at all. So the tokens below
+ *     are declared on .bf-matter (never :root, which a host's later :root
+ *     block would win) and each falls back through the names the hosts
+ *     actually use before reaching a literal.
+ *
+ * Type is deliberately NOT set: font-family inherits from the host, so the
+ * matter reads as part of the book it is bound into rather than as a graft.
+ */
+
+.bf-matter {
+  --bf-ink:    var(--ink, #161A21);
+  --bf-soft:   var(--ink-soft, var(--soft, #4E5665));
+  --bf-faint:  var(--ink-faint, var(--faint, #7C8593));
+  --bf-rule:   var(--rule, #D8DCE3);
+  --bf-paper:  var(--paper, #FFFFFF);
+  --bf-accent: var(--accent, var(--crimson, #9E2B3A));
+  --bf-measure: 34rem;
+
+  box-sizing: border-box;
+  color: var(--bf-ink);
+  text-align: left;
+  font-style: normal;
+}
+
+.bf-matter *,
+.bf-matter *::before,
+.bf-matter *::after { box-sizing: border-box; }
+
+/* Flow hosts have no @page geometry and lay their content out in a .wrap,
+   so the matter supplies its own page breaks and measure. */
+.bf-flow {
+  max-width: var(--bf-measure);
+  margin: 0 auto;
+  padding: 10mm 0 6mm;
+}
+@media print {
+  .bf-flow { break-before: page; page-break-before: always; padding-top: 0; }
+}
+
+.bf-matter h2 {
+  margin: 0 0 6mm;
+  padding: 0 0 3mm;
+  border-bottom: 1px solid var(--bf-rule);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: var(--bf-ink);
+}
+
+.bf-matter h3 {
+  margin: 7mm 0 3mm;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--bf-ink);
+}
+
+.bf-matter p {
+  margin: 0 0 3.5mm;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--bf-soft);
+}
+
+.bf-matter b { font-weight: 600; color: var(--bf-ink); }
+.bf-matter i { font-style: italic; }
+
+.bf-matter .work {
+  color: var(--bf-ink);
+  font-size: 1rem;
+}
+
+.bf-matter .grant {
+  margin: 5mm 0;
+  padding: 4mm 5mm;
+  border-left: 3px solid var(--bf-accent);
+  background: var(--bf-paper);
+}
+.bf-matter .grant p:last-child { margin-bottom: 0; }
+
+.bf-matter .signoff {
+  margin-top: 5mm;
+  color: var(--bf-faint);
+}
+
+.bf-matter .imprint {
+  margin-top: 7mm;
+  padding-top: 3mm;
+  border-top: 1px solid var(--bf-rule);
+  font-size: 0.8rem;
+  color: var(--bf-faint);
+}
+
+/* --- about the author ------------------------------------------------- */
+
+.bf-matter .bio p:last-child { margin-bottom: 0; }
+
+.bf-matter .qrpanel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6mm;
+  margin: 8mm 0 0;
+}
+@media (max-width: 34rem) {
+  .bf-matter .qrpanel { grid-template-columns: 1fr; }
+}
+
+.bf-matter .qrcard {
+  display: flex;
+  gap: 4mm;
+  align-items: flex-start;
+  padding: 4mm;
+  border: 1px solid var(--bf-rule);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* The host may style a bare .code; this is more specific, so it wins. */
+.bf-matter .qrcard .code {
+  flex: 0 0 auto;
+  width: 24mm;
+  background: none;
+  padding: 0;
+  border: 0;
+}
+.bf-matter .qrcard .code svg,
+.bf-matter .qr { display: block; width: 24mm; height: 24mm; }
+
+.bf-matter .qrcard .what {
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+  min-width: 0;
+}
+.bf-matter .qrcard .what b { font-size: 0.9rem; }
+.bf-matter .qrcard .what span {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--bf-soft);
+}
+.bf-matter .qrcard .what code {
+  font-size: 0.78rem;
+  color: var(--bf-accent);
+  background: none;
+  padding: 0;
+}
+
+.bf-matter .colophon {
+  margin-top: 9mm;
+  padding-top: 4mm;
+  border-top: 1px solid var(--bf-rule);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--bf-faint);
+}
+.bf-matter .colophon b { color: var(--bf-soft); }

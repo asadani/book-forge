@@ -20,6 +20,21 @@ variable:
       - {pin: {opsz: 11, wght: 400}, name: SourceSerif4-Regular}
       - {pin: {opsz: 11, wght: 600}, name: SourceSerif4-SemiBold}
 
+  # Fraunces is variable, and Chrome prints variable fonts as Type 3 -- in the
+  # essay books that meant the headings rendered as an unnamed, unextractable
+  # face. These statics replace the Google Fonts variable delivery.
+  - family_dir: fraunces
+    file: "Fraunces[SOFT,WONK,opsz,wght].ttf"
+    instances:
+      - {pin: {SOFT: 0, WONK: 0, opsz: 144, wght: 400}, name: Fraunces-Regular}
+      - {pin: {SOFT: 0, WONK: 0, opsz: 144, wght: 600}, name: Fraunces-SemiBold}
+      - {pin: {SOFT: 0, WONK: 0, opsz: 144, wght: 800}, name: Fraunces-ExtraBold}
+  - family_dir: fraunces
+    file: "Fraunces-Italic[SOFT,WONK,opsz,wght].ttf"
+    instances:
+      - {pin: {SOFT: 0, WONK: 0, opsz: 144, wght: 400}, name: Fraunces-Italic}
+      - {pin: {SOFT: 0, WONK: 0, opsz: 144, wght: 600}, name: Fraunces-SemiBoldItalic}
+
 # Already static upstream; converted to woff2 for size only.
 static:
   - IBMPlexMono-Regular

@@ -42,11 +42,27 @@ def audit(cfg, pdf_path, html_text, baseline=None, quiet=False):
     t3 = [f for f in fonts if "T3" in f[0] or f[1] == "n/a" or not f[0]]
     if t3:
         out.append(("fail", "Type 3 / unembedded faces present: %s" % t3))
+    # A book that declares webfonts and still embeds Liberation/DejaVu did not
+    # load them -- that is a defect. A book that declares no webfonts at all is
+    # using a system stack on purpose, and Times/Arial/Liberation is just that
+    # stack resolving on whichever machine rendered it.
     bad = sorted(f[0] for f in fonts if FALLBACK_RE.search(f[0] or ""))
+    # A book may exempt named faces it knowingly falls back to -- far better
+    # than switching the whole check off, which is how the original defect went
+    # unnoticed for five books.
+    allowed = v.get("allow_fonts") or []
+    if allowed:
+        bad = [f for f in bad if not any(a.lower() in f.lower() for a in allowed)]
     if bad:
-        out.append(("fail",
-                    "fallback fonts embedded (the intended webfonts did not load): %s"
-                    % ", ".join(bad)))
+        if v.get("allow_system_fonts"):
+            out.append(("warn",
+                        "system-font stack resolved to: %s -- rendering is "
+                        "machine-dependent, but this book declares no webfonts"
+                        % ", ".join(s.split("+")[-1] for s in bad)))
+        else:
+            out.append(("fail",
+                        "fallback fonts embedded (the intended webfonts did not load): %s"
+                        % ", ".join(bad)))
 
     # -- text probes ----------------------------------------------------
     front = _norm("".join(doc[i].get_text() for i in range(min(3, doc.page_count))))
@@ -112,11 +128,43 @@ def audit(cfg, pdf_path, html_text, baseline=None, quiet=False):
     doc.close()
 
     # -- body-text diff vs baseline --------------------------------------
+    # This is what makes "front/back matter only" checkable. Adding matter may
+    # only INSERT words; if any baseline word went missing, the injection landed
+    # somewhere it should not have and the interior changed.
     if baseline and os.path.exists(baseline):
+        import difflib
         import io
+        # Compared as a whitespace-free character stream, for two reasons:
+        # repagination renumbers every folio, and it re-breaks words across
+        # lines, so PDF extraction yields "re- route" one build and "re-route"
+        # the next. Neither is a content change.
+        #
+        # Adding matter may only INSERT, so the baseline must survive as a
+        # subsequence of the new text. A greedy walk decides that in one pass.
+        def stream(text):
+            return re.sub(r"[\s ]+", "", re.sub(r"\b\d{1,4}\b", "", text))
+
         with io.open(baseline, encoding="utf-8") as fh:
-            before = fh.read()
-        if _norm(before).strip() != body.strip():
-            out.append(("warn", "body text differs from baseline (expected if "
-                                "matter was added; inspect the diff)"))
+            before = stream(fh.read())
+        after = stream(body)
+
+        i = 0
+        for ch in after:
+            if i < len(before) and ch == before[i]:
+                i += 1
+        if i < len(before):
+            ctx = before[max(0, i - 60):i + 60]
+            msg = ("baseline diverges after %d/%d chars near ...%s..."
+                   % (i, len(before), ctx))
+            # Some shipped PDFs predate their manuscript, so a divergence is
+            # expected and already understood. Saying so explicitly keeps the
+            # check meaningful for every other book.
+            stale = v.get("baseline_stale")
+            if stale:
+                out.append(("warn", "%s -- known: %s" % (msg, stale)))
+            else:
+                out.append(("fail", "interior changed: %s" % msg))
+        elif not quiet:
+            print("  diff   +%d chars vs baseline, 0 lost"
+                  % (len(after) - len(before)))
     return out

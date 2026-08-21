@@ -107,14 +107,24 @@ def context(cfg, qr_svgs=None):
     else:
         ctx["disclosure"] = None
 
-    # QR cards: author.yaml supplies the defaults, meta.yaml may override a card.
+    # QR cards: author.yaml supplies the defaults, meta.yaml may override the
+    # presentation of a card. Codes are matched to cards BY INDEX, not by target
+    # string -- keying on the target meant an override that changed it silently
+    # produced a card with no QR in it at all.
+    svgs = list(qr_svgs or [])
     cards = []
     for i, card in enumerate(author.get("qr", [])):
         card = dict(card)
         for ov in about.get("qr_override") or []:
             if int(ov.get("index", -1)) == i:
+                if "target" in ov:
+                    raise ConfigError(
+                        "matter.about.qr_override[%d] sets `target`. The qr: list "
+                        "is the source of truth for what a code encodes -- change "
+                        "it there, or the printed code and the caption drift apart."
+                        % i)
                 card.update({k: v for k, v in ov.items() if k != "index"})
-        card["svg"] = (qr_svgs or {}).get(card["target"], "")
+        card["svg"] = svgs[i] if i < len(svgs) else ""
         cards.append(card)
     ctx["cards"] = cards
     return ctx

@@ -24,9 +24,16 @@ DEFAULTS = {
     "source": {"template": "book.html.in"},
     "output": {"html": "index.html", "pdf": None},        # pdf -> "<slug>.pdf"
     "page": {"size": "A4"},
-    "cover": {"fit": "crop", "trim_top_share": 0.47, "dpi": 300},
+    # page: render a full-bleed cover page and embed it at {{COVER_PAGE_URI}}.
+    # Flow-mode essays usually draw their own cover in the document, so they
+    # set this false and keep `art` only as the Ko-fi / shelf thumbnail.
+    "cover": {"fit": "crop", "trim_top_share": 0.47, "dpi": 300, "page": True},
     "matter": {"mode": "sheet"},
     "folio": {
+        # Some manuscripts paginate themselves via @page { @bottom-center {
+        # content: counter(page) } }. Stamping those adds a second number next
+        # to the first, so they set enabled: false.
+        "enabled": True,
         "font": "IBMPlexMono-Regular.ttf",
         "size": 8,
         "color": [0.49, 0.52, 0.58],
@@ -41,10 +48,15 @@ DEFAULTS = {
         "min_images": 1,
         "expect_pages": None,
         "page_tolerance": 2,
+        # Some books deliberately use a system-font stack (no @font-face, no
+        # webfonts). Those legitimately embed Times/Arial/Liberation depending
+        # on the rendering machine, and must not be failed for it. Set true
+        # only when the manuscript declares no webfonts of its own.
+        "allow_system_fonts": False,
     },
 }
 
-REQUIRED = ["slug", "title", "cover"]
+REQUIRED = ["slug", "title"]
 
 
 def _merge(base, over):

@@ -45,6 +45,38 @@ def render(html_path, chrome=None, budget_ms=30000, timeout_s=300, quiet=False):
     return raw
 
 
+def _swap(staged, dst, quiet=False, label=""):
+    """Write beside the target, then swap. A PDF held open by a viewer cannot be
+    replaced on Windows; that should not fail the whole build."""
+    out = dst
+    try:
+        os.replace(staged, dst)
+    except PermissionError:
+        out = dst.replace(".pdf", ".new.pdf")
+        os.replace(staged, out)
+        print("  NOTE   %s is open in a viewer; wrote %s instead"
+              % (os.path.basename(dst), os.path.basename(out)))
+    return out
+
+
+def place(raw, dst, quiet=False):
+    """No folio pass: the manuscript numbers its own pages. Still routed through
+    PyMuPDF so the output is subset and compressed the same way."""
+    import fitz
+
+    doc = fitz.open(raw)
+    n = doc.page_count
+    doc.subset_fonts()
+    staged = dst + ".staged"
+    doc.save(staged, garbage=4, deflate=True)
+    doc.close()
+    out = _swap(staged, dst, quiet)
+    if not quiet:
+        print("  pdf    %s, %d pages, %d KB (folios from the manuscript)"
+              % (os.path.basename(out), n, os.path.getsize(out) // 1024))
+    return out, n
+
+
 def stamp(raw, dst, folio, quiet=False):
     """Paint folios and save. Returns (written_path, page_count)."""
     import fitz
@@ -71,19 +103,10 @@ def stamp(raw, dst, folio, quiet=False):
         )
     doc.subset_fonts()
 
-    # Write beside the target first, then swap. A PDF held open by a viewer
-    # cannot be replaced on Windows; that should not fail the whole build.
     staged = dst + ".staged"
     doc.save(staged, garbage=4, deflate=True)
     doc.close()
-    out = dst
-    try:
-        os.replace(staged, dst)
-    except PermissionError:
-        out = dst.replace(".pdf", ".new.pdf")
-        os.replace(staged, out)
-        print("  NOTE   %s is open in a viewer; wrote %s instead"
-              % (os.path.basename(dst), os.path.basename(out)))
+    out = _swap(staged, dst, quiet)
     if not quiet:
         print("  pdf    %s, %d pages, %d KB"
               % (os.path.basename(out), n, os.path.getsize(out) // 1024))

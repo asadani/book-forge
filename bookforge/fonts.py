@@ -17,18 +17,27 @@ RAW = "https://raw.githubusercontent.com/google/fonts/main/ofl/%s"
 
 
 def face_css(faces, quiet=False):
-    """Build the @font-face block for the theme's faces."""
+    """Build the @font-face block for a list of faces.
+
+    Accepts (family, weight, file) tuples or dicts that may also carry `style`.
+    """
     out, total = [], 0
-    for family, weight, filename in faces:
+    for face in faces:
+        if isinstance(face, dict):
+            family, weight = face["family"], int(face["weight"])
+            filename, style = face["file"], face.get("style", "normal")
+        else:
+            family, weight, filename = face
+            style = "normal"
         path = resolve_font(filename)
         with open(path, "rb") as fh:
             blob = fh.read()
         total += len(blob)
         b64 = base64.b64encode(blob).decode("ascii")
         out.append(
-            '@font-face{font-family:"%s";font-style:normal;font-weight:%d;'
+            '@font-face{font-family:"%s";font-style:%s;font-weight:%d;'
             'font-display:block;src:url(data:font/woff2;base64,%s) format("woff2")}'
-            % (family, weight, b64))
+            % (family, style, weight, b64))
     if not quiet:
         print("  fonts  %d faces inlined, %d KB raw" % (len(faces), total // 1024))
     return "\n".join(out)
@@ -67,8 +76,17 @@ def cut(manifest=None):
             print("  fetched %-34s %d KB" % (varfile, len(data) // 1024))
         for inst in job["instances"]:
             font = TTFont(cache)
-            static = instancer.instantiateVariableFont(
-                font, inst["pin"], inplace=False, updateFontNames=True)
+            try:
+                static = instancer.instantiateVariableFont(
+                    font, inst["pin"], inplace=False, updateFontNames=True)
+            except ValueError:
+                # updateFontNames needs a named instance in the STAT table, and
+                # not every weight we want has one (Fraunces has no entry at
+                # wght 800). The instance is still valid; only its name records
+                # keep the master's naming.
+                font = TTFont(cache)
+                static = instancer.instantiateVariableFont(
+                    font, inst["pin"], inplace=False, updateFontNames=False)
             dst = os.path.join(out_dir, inst["name"] + ".woff2")
             static.flavor = "woff2"
             static.save(dst)
