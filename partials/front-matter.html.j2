@@ -1,0 +1,26 @@
+{% import "_macros.j2" as m with context -%}
+{% call m.section("front", front.section_class) %}
+  <h2>{{ front.heading }}</h2>
+
+  <div class="legal">
+    <p class="work">{{ front.work_line }}</p>
+
+    <p>Copyright &copy; {{ year }} {{ author.name }}.</p>
+
+    <div class="grant">
+      {{ grant_html | indent(6) }}
+    </div>
+{% if front.sources_html %}
+
+    {{ front.sources_html.strip() | indent(4) }}
+{% endif %}
+{% if disclosure %}
+
+    {{ disclosure | indent(4) }}
+
+    <p class="signoff">&mdash; {{ author.initials }}</p>
+{% endif %}
+
+    <p class="imprint">{{ front.imprint }}</p>
+  </div>
+{% endcall %}

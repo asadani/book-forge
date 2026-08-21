@@ -1,0 +1,52 @@
+# Licence names and the grant prose that goes on the copyright plate.
+#
+# grant_html is itself a Jinja template, rendered with the same context as the
+# partials, so it can name the author and the title.
+#
+# meta.yaml -> license.id is REQUIRED and has no default. The pipeline this
+# replaced hardcoded CC BY 4.0, which would silently relicense the books that
+# ship under NC-ND.
+
+CC-BY-4.0:
+  name: "Creative Commons Attribution 4.0 International"
+  short: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  grant_html: |
+    <p><b>Use it freely.</b> Share it, quote it, teach from it, put a chart in
+        your deck, argue with it in public. The only thing asked in return is
+        attribution: name <b>{{ author.name }}</b> and <i>{{ title }}</i>, with a
+        link where the format allows one.</p>
+      <p>Released under {{ license.name }}
+        ({{ license.short }}).</p>
+
+CC-BY-NC-ND-4.0:
+  name: "Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International"
+  short: "CC BY-NC-ND 4.0"
+  url: "https://creativecommons.org/licenses/by-nc-nd/4.0/"
+  grant_html: |
+    <p><b>Read it and pass it on.</b> Share it whole, quote it, teach from it.
+        The one thing asked in return is attribution: name <b>{{ author.name }}</b>
+        and <i>{{ title }}</i>, with a link where the format allows one.</p>
+      <p>Commercial use and derivative works are not granted here &mdash; if you
+        want either, ask. Released under {{ license.name }}
+        ({{ license.short }}).</p>
+
+CC-BY-SA-4.0:
+  name: "Creative Commons Attribution-ShareAlike 4.0 International"
+  short: "CC BY-SA 4.0"
+  url: "https://creativecommons.org/licenses/by-sa/4.0/"
+  grant_html: |
+    <p><b>Use it freely.</b> Share it, quote it, teach from it, build on it. Two
+        things asked in return: attribution &mdash; name <b>{{ author.name }}</b>
+        and <i>{{ title }}</i> &mdash; and that anything you build on it carries
+        the same freedoms.</p>
+      <p>Released under {{ license.name }}
+        ({{ license.short }}).</p>
+
+all-rights-reserved:
+  name: "All rights reserved"
+  short: "All rights reserved"
+  url: null
+  grant_html: |
+    <p>All rights reserved. Quote it in a review or a piece of criticism with
+        attribution; anything further, please ask.</p>

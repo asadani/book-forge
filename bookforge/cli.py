@@ -93,6 +93,67 @@ def cmd_build(args):
     return _report(issues, cfg, written, strict=args.strict)
 
 
+def _qr_slots(cfg):
+    """target -> "{{SLOT}}". The manuscript keeps the slot tokens; `bf build`
+    fills them with real SVG, so book.html.in stays readable."""
+    return dict((s["target"], "{{%s}}" % s["slot"]) for s in (cfg.get("qr") or []))
+
+
+REGIONS = [
+    ("FRONT-MATTER", "front", "front_matter"),
+    ("ABOUT", "about", "about_author"),
+]
+
+
+def cmd_inject(args):
+    from . import html, inject, render
+
+    cfg = _load(args)
+    text = html.read(cfg.template)
+    original = text
+    slots = _qr_slots(cfg)
+
+    problems = inject.integrity(text, [r[0] for r in REGIONS])
+    if problems:
+        for p in problems:
+            print("  FAIL  %s" % p)
+        return 1
+
+    results = []
+    for region, key, fn in REGIONS:
+        body = getattr(render, fn)(cfg, slots)
+        text, status = inject.apply(
+            text, region, body,
+            anchor_before=cfg.get("matter.%s.anchor_before" % key),
+            anchor_after=cfg.get("matter.%s.anchor_after" % key))
+        results.append((region, status))
+
+    css = render.matter_css()
+    if css and cfg.get("matter.css", cfg.get("matter.mode") == "flow"):
+        anchor = cfg.get("matter.css_anchor", "</style>")
+        text, status = inject.apply(text, "MATTER-CSS", css, anchor_before=anchor)
+        results.append(("MATTER-CSS", status))
+
+    changed = text != original
+    for region, status in results:
+        print("  %-13s %s" % (region, status))
+
+    if args.check:
+        if changed:
+            print("\nout of date: `bf inject` would rewrite %s"
+                  % os.path.basename(cfg.template))
+            return 1
+        print("\nup to date")
+        return 0
+
+    if changed:
+        html.write(cfg.template, text)
+        print("\nwrote %s" % os.path.basename(cfg.template))
+    else:
+        print("\nno change")
+    return 0
+
+
 def cmd_verify(args):
     from . import html, verify as verifymod
     cfg = _load(args)
@@ -199,6 +260,11 @@ def build_parser():
     b.add_argument("--stage", choices=["html", "pdf", "stamp", "verify"], default=None)
     b.add_argument("--no-pdf", action="store_true")
     b.set_defaults(func=cmd_build)
+
+    i = common(sub.add_parser("inject", help="render the matter partials into the manuscript"))
+    i.add_argument("--check", action="store_true",
+                   help="report whether the manuscript is current; write nothing")
+    i.set_defaults(func=cmd_inject)
 
     common(sub.add_parser("verify", help="audit the built PDF")).set_defaults(func=cmd_verify)
     common(sub.add_parser("doctor", help="environment and config check")).set_defaults(func=cmd_doctor)

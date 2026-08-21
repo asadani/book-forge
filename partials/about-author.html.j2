@@ -1,0 +1,31 @@
+{% import "_macros.j2" as m with context -%}
+{% call m.section("about", about.section_class) %}
+  <h2>{{ about.heading }}</h2>
+
+  <div class="bio">
+    {{ author.bio_html.strip() | indent(4) }}
+{% if about.closing_html %}
+
+    {{ about.closing_html.strip() | indent(4) }}
+{% endif %}
+  </div>
+
+  <div class="qrpanel">
+{% for card in cards %}
+    <div class="qrcard">
+      <div class="code">{{ card.svg }}</div>
+      <div class="what">
+        <b>{{ card.label }}</b>
+        <span>{{ card.blurb }}</span>
+        <code>{{ card.code }}</code>
+      </div>
+    </div>
+{% endfor %}
+  </div>
+{% if colophon_html %}
+
+  <div class="colophon">
+    {{ colophon_html.strip() | indent(4) }}
+  </div>
+{% endif %}
+{% endcall %}

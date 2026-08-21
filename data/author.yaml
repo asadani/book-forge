@@ -1,0 +1,94 @@
+# The author, once. Seven books read this file, which is what makes
+# "standardise the about-author page" a one-file edit rather than seven.
+#
+# Prose here is HTML because the partials emit it verbatim; the surrounding
+# markup and CSS classes are the partials' business, not this file's.
+
+name: "Anuj Sadani"
+initials: "A.S."
+
+bio_html: |
+  <p>Anuj Sadani builds AI systems and the teams that build them. He spent a
+    decade at NVIDIA, has worked inside AI-first organizations, and has led
+    multicultural engineering pods across Europe &mdash; sixteen-plus years,
+    most of them on the AI era's unglamorous half: turning hype into systems
+    that ship, and systems that ship into outcomes that hold up in production.
+    That work has fed into industry recognition from Gartner and Everest Group,
+    and an Innovator of the Year nod.</p>
+
+  <p>He is the author of <i>The Clean Vibe Coder: A Code of Conduct for
+    Programmers in the Age of AI Agents</i> and <i>Borrow the Line. Own the
+    Move.</i>, and writes about engineering, leadership, and what stays human
+    when the tools get good. He still believes the best technology is the kind
+    that makes the people around it braver.</p>
+
+# The two QR destinations. A book may override the second card via
+# meta.yaml -> matter.about.qr_override when it has its own reading URL.
+qr:
+  - target: "https://anujsadani.in"
+    label: "Writing and work"
+    blurb: "Essays, books, and what he is building."
+    code: "anujsadani.in"
+  - target: "https://tech.anujsadani.in"
+    label: "This book, and the evidence"
+    blurb: "Read it online, download the PDF, or walk the source ledger."
+    code: "tech.anujsadani.in"
+
+# Authorship disclosure. Selected per book by matter.front.ai_disclosure:
+#   verified -- the book has a claim ledger and a verification gate
+#   drafted  -- AI-drafted, but no gate; must not claim one
+#   (omit)   -- no disclosure section at all
+#
+# This is a factual claim about how a given book was made, so it is opt-in per
+# book rather than applied uniformly.
+ai_disclosure:
+  verified: |
+    <h3>A note on how this book was written</h3>
+
+    <p>An AI system drafted this book. Not "assisted with" &mdash; drafted it,
+      from the research through to the prose you are reading. I set the question
+      and its boundaries, made the judgment calls, argued with the drafts, and
+      put my name on the result. The errors are mine; the model does not get to
+      share the blame.</p>
+
+    <p>If that makes you wince, I understand the reflex. The internet is full of
+      confident, sourceless, frictionless text, and the reasonable response has
+      been to distrust anything that reads too smoothly. But the objection worth
+      taking seriously is not that a machine wrote it. It is that nobody checked
+      it.</p>
+
+    <p>So this book was built the other way round. Sources were captured to disk
+      and hashed before a word was drafted. Every factual sentence is bound to an
+      exact quotation inside one of those files, and a verification gate refused
+      to let the text ship until each binding checked out. The superscripts are
+      not decoration &mdash; they are the audit trail, and you can walk it
+      yourself in an afternoon.</p>
+
+    <p>That is the arrangement I would like to see become normal: let the machine
+      draft, and make the drafting answer for itself. If you compose every
+      sentence by hand, full respect &mdash; the craft shows. And if you notice
+      the em-dashes, they are mine. I have always written this way. Make your
+      peace with them.</p>
+
+  drafted: |
+    <h3>A note on how this book was written</h3>
+
+    <p>An AI system drafted this book. Not "assisted with" &mdash; drafted it,
+      from the outline through to the prose you are reading. I set the question
+      and its boundaries, made the judgment calls, argued with the drafts, and
+      put my name on the result. The errors are mine; the model does not get to
+      share the blame.</p>
+
+    <p>If that makes you wince, I understand the reflex. The internet is full of
+      confident, sourceless, frictionless text, and the reasonable response has
+      been to distrust anything that reads too smoothly. But the objection worth
+      taking seriously is not that a machine wrote it. It is that nobody checked
+      it.</p>
+
+    <p>This one carries no formal verification gate &mdash; it is an argument
+      rather than an audit, and you should read it as one. Where it leans on a
+      number or a study, the source is named so you can go and disagree with it
+      at first hand.</p>
+
+    <p>And if you notice the em-dashes, they are mine. I have always written this
+      way. Make your peace with them.</p>

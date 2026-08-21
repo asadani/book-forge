@@ -1,0 +1,16 @@
+{#- Mode-aware section wrapper.
+
+    sheet mode: the host document already paginates on `section.sheet` and has
+    CSS for its own plate/backmatter classes, so the wrapper carries those and
+    the book renders exactly as it did before. The bf- classes ride along as
+    styling hooks.
+
+    flow mode: the host is a single-flow essay with no @page geometry, so the
+    wrapper carries only bf- classes and partials/matter.css supplies the
+    pagination, measure, and type.
+-#}
+{% macro section(kind, host_class=None) -%}
+<section class="{% if host_class %}{{ host_class }} {% endif %}bf-matter bf-{{ kind }}{% if mode == 'flow' %} bf-flow{% endif %}">
+{{ caller() }}
+</section>
+{%- endmacro %}
