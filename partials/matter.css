@@ -25,7 +25,6 @@
   --bf-rule:   var(--rule, #D8DCE3);
   --bf-paper:  var(--paper, #FFFFFF);
   --bf-accent: var(--accent, var(--crimson, #9E2B3A));
-  --bf-measure: 34rem;
 
   box-sizing: border-box;
   color: var(--bf-ink);
@@ -37,12 +36,19 @@
 .bf-matter *::before,
 .bf-matter *::after { box-sizing: border-box; }
 
-/* Flow hosts have no @page geometry and lay their content out in a .wrap,
-   so the matter supplies its own page breaks and measure. */
+/* Do NOT impose a width or padding by default. Every host already lays its
+   own content out -- a bare `section` card at 820px in one, a `.wrap` at 740px
+   in another -- and overriding that made the matter render at a different
+   measure from the book it sits in, which reads as a different document.
+   Set matter.measure in meta.yaml only for a host that constrains nothing. */
+/* Deliberately declares NO max-width. `.bf-flow` outranks a host's bare
+   `section { max-width: 820px }`, so declaring one here -- even
+   `var(--bf-measure, none)` -- overrides the host and renders the matter at a
+   different width from the book around it. Hosts that constrain nothing can
+   opt in with matter.measure in meta.yaml, which appends a rule below. */
 .bf-flow {
-  max-width: var(--bf-measure);
-  margin: 0 auto;
-  padding: 10mm 0 6mm;
+  margin-left: auto;
+  margin-right: auto;
 }
 @media print {
   .bf-flow { break-before: page; page-break-before: always; padding-top: 0; }

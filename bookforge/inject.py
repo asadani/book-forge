@@ -18,8 +18,20 @@ import re
 
 from .errors import ConfigError
 
-OPEN_RE = "<!--\\s*BOOK-FORGE:%s\\b[^>]*-->"
-CLOSE_RE = "<!--\\s*/BOOK-FORGE:%s\\s*-->"
+# Marker syntax depends on where the region lands. Inside <style>, an HTML
+# comment is NOT a comment: the CSS tokenizer reads "<!--" as a CDO token and
+# then treats the marker text as a selector, scanning forward to the next "{"
+# -- which silently swallows the first rule of the injected block. Regions
+# that go inside <style> must therefore be delimited by CSS comments.
+STYLES = {
+    "html": ("<!-- BOOK-FORGE:%s v1 sha=%s -->", "<!-- /BOOK-FORGE:%s -->",
+             "<!--\\s*BOOK-FORGE:%s\\b[^>]*-->", "<!--\\s*/BOOK-FORGE:%s\\s*-->"),
+    "css": ("/* BOOK-FORGE:%s v1 sha=%s */", "/* /BOOK-FORGE:%s */",
+            "/\\*\\s*BOOK-FORGE:%s\\b[^*]*\\*/", "/\\*\\s*/BOOK-FORGE:%s\\s*\\*/"),
+}
+
+# Regions injected inside <style>, which need CSS comment markers.
+CSS_REGIONS = {"MATTER-CSS", "FONTS"}
 
 UNCHANGED, UPDATED, INSERTED = "unchanged", "updated", "inserted"
 
@@ -28,21 +40,23 @@ def digest(body):
     return hashlib.sha256(body.encode("utf-8")).hexdigest()[:12]
 
 
-def wrap(name, body):
-    return ("<!-- BOOK-FORGE:%s v1 sha=%s -->\n%s\n<!-- /BOOK-FORGE:%s -->"
-            % (name, digest(body), body, name))
+def wrap(name, body, style="html"):
+    opener, closer = STYLES[style][0], STYLES[style][1]
+    return "%s\n%s\n%s" % (opener % (name, digest(body)), body, closer % name)
 
 
-def _region(name):
-    return re.compile(OPEN_RE % name + r".*?" + CLOSE_RE % name, re.S)
+def _region(name, style="html"):
+    o, c = STYLES[style][2], STYLES[style][3]
+    return re.compile((o % name) + r".*?" + (c % name), re.S)
 
 
 def integrity(text, names):
     """Marker pairs must be balanced and unique. Returns a list of problems."""
     out = []
     for name in names:
-        opens = len(re.findall(OPEN_RE % name, text))
-        closes = len(re.findall(CLOSE_RE % name, text))
+        style = "css" if name in CSS_REGIONS else "html"
+        opens = len(re.findall(STYLES[style][2] % name, text))
+        closes = len(re.findall(STYLES[style][3] % name, text))
         if opens != closes:
             out.append("marker %s: %d open, %d close" % (name, opens, closes))
         elif opens > 1:
@@ -50,10 +64,11 @@ def integrity(text, names):
     return out
 
 
-def apply(text, name, body, anchor_before=None, anchor_after=None):
+def apply(text, name, body, anchor_before=None, anchor_after=None, style=None):
     """Replace the named region, or insert it at an anchor. Returns (text, status)."""
-    block = wrap(name, body)
-    rx = _region(name)
+    style = style or ("css" if name in CSS_REGIONS else "html")
+    block = wrap(name, body, style)
+    rx = _region(name, style)
     found = rx.search(text)
     if found:
         if found.group(0) == block:

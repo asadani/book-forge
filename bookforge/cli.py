@@ -153,6 +153,11 @@ def cmd_inject(args):
         results.append(("FONTS", status))
 
     css = render.matter_css()
+    # Opt-in width, for a host that constrains nothing of its own.
+    measure = cfg.get("matter.measure")
+    if css and measure:
+        css += ("\n\n/* matter.measure from meta.yaml */\n"
+                ".bf-matter.bf-flow { max-width: %s; }" % measure)
     if css and cfg.get("matter.css", cfg.get("matter.mode") == "flow"):
         anchor = cfg.get("matter.css_anchor", "</style>")
         text, status = inject.apply(text, "MATTER-CSS", css, anchor_before=anchor)
