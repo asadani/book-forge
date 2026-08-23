@@ -28,7 +28,10 @@ DEFAULTS = {
     # Flow-mode essays usually draw their own cover in the document, so they
     # set this false and keep `art` only as the Ko-fi / shelf thumbnail.
     "cover": {"fit": "crop", "trim_top_share": 0.47, "dpi": 300, "page": True},
-    "matter": {"mode": "sheet"},
+    # flow is the house default: books read as one continuous page on screen
+    # and still paginate in print via the manuscript's own break-before rules.
+    # Sheet mode -- a fixed card per printed page -- is opt-in per book.
+    "matter": {"mode": "flow"},
     "folio": {
         # Some manuscripts paginate themselves via @page { @bottom-center {
         # content: counter(page) } }. Stamping those adds a second number next
