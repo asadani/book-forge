@@ -96,8 +96,14 @@ def context(cfg, qr_svgs=None):
     # The licence grant names the author and the title, so it is itself a template.
     ctx["grant_html"] = _env().from_string(lic.get("grant_html", "")).render(**ctx).strip()
 
+    # A book may supply its own disclosure inline. The named variants in
+    # author.yaml are shared across every title, so a work that is not a book --
+    # a paper, a journal, a report -- would otherwise be stuck calling itself one.
+    inline = front.get("ai_disclosure_html")
     which = front.get("ai_disclosure")
-    if which:
+    if inline:
+        ctx["disclosure"] = inline.strip()
+    elif which:
         variants = author.get("ai_disclosure", {})
         if which not in variants:
             raise ConfigError(
