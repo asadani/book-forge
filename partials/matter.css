@@ -171,3 +171,33 @@
   color: var(--bf-faint);
 }
 .bf-matter .colophon b { color: var(--bf-soft); }
+
+/* --- screen reading order -------------------------------------------------
+ *
+ * On paper the order is right: cover, title page, copyright, the argument,
+ * about. On a screen it is a wall -- a reader meets a full-bleed cover, a
+ * title page, a copyright notice and an AI-disclosure note before one
+ * sentence of the argument, which on a 30-page essay is four screens of
+ * scrolling to find out whether it is worth reading.
+ *
+ * So screen only: drop the cover image, and send the copyright/disclosure
+ * block to the end where a reader who wants it can still find it. @media
+ * print is untouched, so the PDF keeps the print order exactly.
+ *
+ * body becomes a flex column because `order` needs a flex container. That
+ * stops margins collapsing BETWEEN top-level sections -- which is why the
+ * sections themselves are given a single margin direction below rather than
+ * relying on collapse.
+ */
+@media screen {
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  body > section.cover,
+  body > section.sheet.cover { display: none; }
+
+  body > section { order: 0; }
+  body > .bf-front { order: 8; }
+  body > .bf-about { order: 9; }
+}
