@@ -86,6 +86,32 @@ def audit(cfg, pdf_path, html_text, baseline=None, quiet=False):
     if "{{" in body:
         out.append(("fail", "template placeholder leaked into rendered output"))
 
+    # -- site header -----------------------------------------------------
+    #
+    # Every article-like page on the site carries a header: the brand, and a
+    # link home. The book pages were the last ones without it -- five of them
+    # shipped headerless because nothing looked, which is the same way the
+    # fallback-font defect survived. So this is checked, not remembered.
+    #
+    # It is also checked in BOTH directions. The header belongs on screen and
+    # must never reach the PDF: that file is the artifact somebody paid for,
+    # and site chrome in it is a defect. Hide it with @media print.
+    navs = re.findall(r"<nav[^>]*>.*?</nav>", html_text, re.S)
+    if not navs:
+        out.append(("fail",
+                    "no site header: the screen edition needs a <nav> with the "
+                    "brand and a link home (hidden in print)"))
+    elif not any(re.search(r'href="(?:/|https?://[^"]*tech\.anujsadani\.in/?)"', n)
+                 for n in navs):
+        out.append(("fail",
+                    "site header has no link back to the index -- a reader who "
+                    "lands on the book has no way out"))
+    for chrome in ("anuj sadani | tech", "pdf on ko-fi"):
+        if chrome in body.lower():
+            out.append(("fail",
+                        "site chrome leaked into the PDF (%r) -- the header "
+                        "must be hidden in @media print" % chrome))
+
     # -- QR round-trip ---------------------------------------------------
     from . import qr as qrmod
     theme_qr = cfg.theme.get("qr", {})
