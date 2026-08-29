@@ -156,6 +156,11 @@
   color: var(--bf-soft);
 }
 .bf-matter .qrcard .what code {
+  /* Without this, <code> falls to the browser's default mono -- Consolas on
+     Windows, DejaVu on Linux -- so the same book rendered a different face
+     depending on the machine that built it. Books that happen to define their
+     own .qrcard code rule were fine; the ones that did not, were not. */
+  font-family: var(--mono, var(--bf-mono, ui-monospace, monospace));
   font-size: 0.78rem;
   color: var(--bf-accent);
   background: none;
