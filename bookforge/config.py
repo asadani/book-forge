@@ -139,9 +139,18 @@ class Config(object):
 
     @property
     def faces(self):
-        """[(family, weight, filename)] from the theme."""
+        """[(family, weight, filename)] -- the book's own list if it declares
+        one, else the theme's.
+
+        A book with its own typographic identity should not have to push its
+        faces into the shared theme, where every other book would then inline
+        them. Declare them under `fonts: faces:` in meta.yaml instead; the file
+        must already be cut into book-forge/fonts/.
+        """
+        own = (self.data.get("fonts") or {}).get("faces")
+        src = own if own else self.theme.get("faces", [])
         out = []
-        for f in self.theme.get("faces", []):
+        for f in src:
             out.append((f["family"], int(f["weight"]), f["file"]))
         return out
 
